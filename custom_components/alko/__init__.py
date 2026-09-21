@@ -121,7 +121,8 @@ class AlkoEntity(CoordinatorEntity[DataUpdateCoordinator[Alko]]):
         self._serial_number = device.thingAttributes.serialNumber
         self._update_device = coordinator.data.update_device
 
-        # NEW: try to get user_assigned_name, if pyalko call it different, use getattr().
+        # NEU: user_assigned_name auslesen. Falls pyalko es anders benennt, 
+        # nutzen wir getattr() um Fehler zu vermeiden, falls das Attribut fehlt.
         self._user_assigned_name = getattr(device.thingAttributes, "userAssignedName", None)
         if not self._user_assigned_name:
             self._user_assigned_name = getattr(device.thingAttributes, "name", None)
@@ -135,11 +136,14 @@ class AlkoEntity(CoordinatorEntity[DataUpdateCoordinator[Alko]]):
     @property
     def unique_id(self) -> str:
         """Return the unique ID for this entity."""
+        # WICHTIG: Bleibt unverändert auf Basis von thingName, damit IDs stabil bleiben!
         return f"{self._normalize_string(self._device_name)}_{self._key}"
 
     @property
     def name(self) -> str:
         """Return the name of the entity."""
+        # NEU: Wenn ein benutzerdefinierter Name existiert, nutze diesen. 
+        # Ansonsten nimm wie vorher das Standard-Modell.
         display_name = self._user_assigned_name if self._user_assigned_name else self._device_model
         return f"{display_name} {self._name}"
 
